@@ -1,29 +1,28 @@
-# import cupy as cp
 import cupy as np
 import cv2
 import pickle
 from google.colab import files
+from google.colab.patches import cv2_imshow
+import matplotlib.pyplot as plt
+import os
 
-
-# Function to preprocess the input image
-# Function to preprocess the input image
 def preprocess_image(image):
-    # Resize the image to 28x28 pixels and convert it to grayscale
-    image_gray = cv2.cvtColor(cv2.resize(image, (28, 28)), cv2.COLOR_BGR2GRAY)
+     # Resize the image to 28x28 pixels
+    image = cv2.resize(image, (28, 28))
+    # Convert the image to grayscale
+    image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    # Threshold the image to make the background white
-    _, image_thresh = cv2.threshold(image_gray, 150, 255, cv2.THRESH_BINARY)
+    # Calculate the mean value of the preprocessed image
+    mean_value = np.mean(image_gray)
 
-     # Check if the background is white (255) or black (0)
-    if np.mean(image_thresh) > 128:
-        # Reverse the colors (black to white, white to black)
-        image_thresh_reversed = cv2.bitwise_not(image_thresh)
-    else:
-        # Keep the colors as is (black background, white text)
-        image_thresh_reversed = image_thresh
+    # Determine the thresholding type based on the mean value
+    if mean_value < 128:  # If background is black (white text)
+        _, image_thresh = cv2.threshold(image_gray, 128, 255, cv2.THRESH_BINARY)
+    else:  # If background is white (black text)
+        _, image_thresh = cv2.threshold(image_gray, 128, 255, cv2.THRESH_BINARY_INV)
 
     # Normalize the pixel values
-    image_norm = image_thresh_reversed / 255.0
+    image_norm = image_thresh / 255.0
 
     # Reshape the image to match the input shape of the model
     image_reshaped = image_norm.reshape(1, 1, 28, 28).astype(np.float32)
@@ -54,27 +53,20 @@ def predict_digit(image):
     return digit.get()
 
 
-# Upload the image file
 uploaded = files.upload()
 
-# Check if an image file was uploaded
 if len(uploaded) == 0:
     print("No image file uploaded.")
     exit(1)
 
-# Get the uploaded image file
 image_path = next(iter(uploaded))
 
-# Load the input image
 image = cv2.imread(image_path)
 
-# Check if the image was loaded successfully
 if image is None:
     print("Failed to load the image.")
     exit(1)
 
-# Perform the prediction
 predicted_digit = predict_digit(image)
-
-# Print the predicted digit
 print("Predicted Digit:", predicted_digit)
+os.remove(image_path)

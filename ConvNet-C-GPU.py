@@ -15,9 +15,9 @@ import pickle
 # 1: Settings
 network = ConvNet(input_dim=(1, 28, 28),
                   conv_param={'filter_num': 32, 'filter_size': 5, 'pad': 2, 'stride': 1},
-                  hidden_size=100, output_size=10, weight_init_std=0.01)
+                  hidden_size=100, output_size=10)
 optimizer = Adam()
-max_epochs = 10
+max_epochs = 15
 train_size = x_train.shape[0]
 batch_size = 100
 iter_per_epoch = max(train_size / batch_size, 1)
@@ -56,8 +56,8 @@ with open('model.pkl', 'wb') as f:
 # 3: Plot
 markers = {'train': 'o', 'test': 's'}
 x = np.arange(max_epochs)
-plt.plot(x.get(), np.asarray(train_acc_list), marker='o', label='train', markevery=2)
-plt.plot(x.get(), np.asarray(test_acc_list), marker='s', label='test', markevery=2)
+plt.plot(x.get(), np.asarray(train_acc_list).get(), marker='o', label='train', markevery=2)
+plt.plot(x.get(), np.asarray(test_acc_list).get(), marker='s', label='test', markevery=2)
 plt.xlabel("epochs")
 plt.ylabel("accuracy")
 plt.ylim(0, 1.0)
